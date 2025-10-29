@@ -1,0 +1,143 @@
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <iostream>
+
+#include"shaderClass.h" //shader program class
+#include"VBO.h" //vertex buffer class
+#include"EBO.h" //element (index) buffer class
+#include"VAO.h" //vertex array object class
+
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
+
+
+//each time the window is resized, set the viewport width and height to the new resize
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+	//close the process if escape key is pressed
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+}
+
+int main()
+{
+	//--------------Initialize-------------------
+	std::cout << "starting OpenGL window" << std::endl;
+	//create a new openGL context
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	//create a window object
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Tommy sucks peen", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cout << "failed to create window" << std::endl;
+		glfwTerminate(); //fail gracefully if the window fails to create
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+
+	//initialize GLAD (manages function pointers for OpenGL)
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "failed to initialize GLAD" << std::endl;
+		return -1;
+	}
+
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); //establish rendering viewport (same size as window)
+
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); //bind the window resize callback
+
+
+
+	//------------------Set Up The Data We Send To The GPU------------------
+	// A buffer is used so that all data is sent at once, reducing latency as the GPU is much faster than the CPU
+
+	//vertex data, describe vertices in normalized world coords
+	GLfloat vertices[] = {
+		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, //lower left corner : 0
+		0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, //lower right corner : 1
+		0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f, //top corner : 2
+		-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f, //inner left : 3
+		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f, //inner right : 4
+		0.0f,  -0.5f * float(sqrt(3)) / 3, 0.0f, //inner bottom : 5
+	};
+
+	//describe the triangles as an order of vertices using the index of each vertex in the VBO
+	GLuint indices[] = {
+		0, 3, 5, //left tri
+		5, 4, 1, //right tri
+		3, 4, 2 //top tri
+	};
+
+
+
+	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
+	Shader shaderProgram("default.vert", "default.frag");
+
+	//Generate Vertex Array Object and Bind it
+	VAO VAO1;
+	VAO1.Bind();
+
+	//Generate Vertex Buffer Object and link the vertex data defined above into it
+	VBO VBO1(vertices, sizeof(vertices));
+
+	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
+	EBO EBO1(indices, sizeof(indices));
+
+	//link the Vertex Buffer to Vertex Array Object (tell shaders how to interpret vertex data)
+	VAO1.LinkVBO(VBO1, 0);
+
+
+	//prevent accidentally modifying VBO/VAO/EBO in lines below this
+	VAO1.UnBind();
+	VBO1.Unbind();
+	EBO1.Unbind();
+
+
+
+
+
+
+	//----------------------------------------------------------Main Loop----------------------------------------------------------
+
+	while (!glfwWindowShouldClose(window))
+	{
+		//input
+		processInput(window);
+
+		//rendering (pipeline (* for where we can inject custom shader)
+		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
+		glClearColor(0.245f, 0.04f, 0.145, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
+		glClear(GL_COLOR_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
+		
+		shaderProgram.Activate();
+		VAO1.Bind();
+		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+		
+		//check and call events + buffer swap to display next frame
+		glfwPollEvents();
+		glfwSwapBuffers(window);
+	}
+
+	//release all allocated resources after main render loop ends
+	VAO1.Delete();
+	VBO1.Delete();
+	EBO1.Delete();
+	shaderProgram.Delete();
+
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
+	return 0;
+}
+

@@ -1,0 +1,7 @@
+.vs/
+x64/
+
+LearnOpenGL/GLFW/
+LearnOpenGL/x64/
+
+LearnOpenGL/*.vcxproj.user
