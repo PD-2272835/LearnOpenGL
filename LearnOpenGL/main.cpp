@@ -79,6 +79,10 @@ int main()
 		3, 4, 2 //top tri
 	};
 
+	GLuint indices2[] = {
+		3, 4, 5 //center tri
+	};
+
 
 
 	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
@@ -103,12 +107,22 @@ int main()
 	VBO1.Unbind();
 	EBO1.Unbind();
 
+	VAO VAO2;
+	VAO2.Bind();
+	EBO EBO2(indices2, sizeof(indices2));
+	VAO2.LinkVBO(VBO1, 0); //reuse first vetex buffer data
+
 
 
 
 
 
 	//----------------------------------------------------------Main Loop----------------------------------------------------------
+
+	float timeValue;
+	float modulatedValue;
+	GLuint vertexColorLocation;
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -117,12 +131,25 @@ int main()
 
 		//rendering (pipeline (* for where we can inject custom shader)
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
-		glClearColor(0.245f, 0.04f, 0.145, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
+		glClearColor(0.245f, 0.04f, 0.2f, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
 		glClear(GL_COLOR_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
 		
+
+		timeValue = glfwGetTime(); //time since Program execution has started (seconds)
+		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
+		vertexColorLocation = glGetUniformLocation(shaderProgram.ID, "ProgColor"); //search compiled shader program for a "uniform" (global variable)
+		glUniform4f(vertexColorLocation, 0.0f, modulatedValue, 0.0f, 0.0f);
+
+
 		shaderProgram.Activate();
 		VAO1.Bind();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+		VAO1.UnBind();
+		VAO2.Bind();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		VAO2.UnBind();
 		
 		//check and call events + buffer swap to display next frame
 		glfwPollEvents();

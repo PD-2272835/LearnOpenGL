@@ -1,5 +1,6 @@
 #include"shaderClass.h"
 
+//read shader file source from a given filename
 std::string get_file_contents(const char* filename)
 {
 	std::ifstream in(filename, std::ios::binary);
