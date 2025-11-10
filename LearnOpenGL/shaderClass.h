@@ -12,13 +12,19 @@ std::string get_file_contents(const char* filename);
 
 class Shader
 {
+	private:
+		GLint GetUniformLocation(const char* uniformName);
+
 	public:
 		GLuint ID;
 		Shader(const char* vertexFilePath, const char* fragmentFilePath);
 
 		void Activate();
 		void Delete();
-		GLint GetUniformLoc(const char* uniform);
+
+		void SetBool(const char* name, bool value);
+		void SetInt(const char* name, GLint value);
+		void SetFloat(const char* name, GLfloat value);
 };
 
 #endif

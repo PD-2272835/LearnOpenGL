@@ -1,9 +1,9 @@
-#version 420 core
+#version 330 core
 out vec4 FragColor;
 
 in vec3 VertexColor;
 
-uniform float alphaModulator; //uniform syntax, passing global values into fragment shader
+uniform float alphaModulator;
 
 void main()
 {

@@ -142,12 +142,11 @@ int main()
 
 		timeValue = glfwGetTime(); //time since Program execution has started a(seconds)
 		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
-		//passing data into a uniform (global shader variable)
-		alphaModulatorLocation = shaderProgram.GetUniformLoc("alphaModulator"); //search compiled shader program for a uniform
-		glUniform1f(alphaModulatorLocation, modulatedValue);
+
 
 
 		shaderProgram.Activate();
+		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 		
 		VAO1.Bind();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
