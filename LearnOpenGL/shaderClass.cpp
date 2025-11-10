@@ -19,10 +19,10 @@ std::string get_file_contents(const char* filename)
 
 
 
-Shader::Shader(const char* vertexFile, const char* fragmentFile)
+Shader::Shader(const char* vertexFilePath, const char* fragmentFilePath)
 {
-	std::string vertexCode = get_file_contents(vertexFile);
-	std::string fragmentCode = get_file_contents(fragmentFile);
+	std::string vertexCode = get_file_contents(vertexFilePath);
+	std::string fragmentCode = get_file_contents(fragmentFilePath);
 
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();

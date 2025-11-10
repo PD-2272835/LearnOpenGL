@@ -64,11 +64,12 @@ int main()
 
 	//vertex data, describe vertices in normalized world coords
 	GLfloat vertices[] = {
-		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,		1.0f, 0.0f, 0.0f, //lower left corner : 0
-		0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,			0.0f, 1.0f, 0.0f, //lower right corner : 1
-		0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,		0.0, 1.0f, 0.0f, //top corner : 2
+		//Layout 0 - aPos									Layout 1 - aColor
+		-0.5f,	-0.5f * float(sqrt(3)) / 3,		0.0f,		1.0f, 0.0f, 0.0f,	//lower left corner : 0		(red)
+		0.5f,	-0.5f * float(sqrt(3)) / 3,		0.0f,		0.0f, 1.0f, 0.0f,	//lower right corner : 1	(green)
+		0.0f,	 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,		0.0, 0.0f, 1.0f,	//top corner : 2			(blue)
+		
 		//just need the three far corners for using vertex data with shaders
-
 		/*-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	 //inner left : 3
 		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	 //inner right : 4
 		0.0f,  -0.5f * float(sqrt(3)) / 3, 0.0f, */	 //inner bottom : 5
@@ -97,11 +98,12 @@ int main()
 	//Generate Vertex Buffer Object and link the vertex data defined above into it
 	VBO VBO1(vertices, sizeof(vertices));
 
+	//defining the location of vertex attributes - 0: position, 1: colour
+	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)0);
+	VAO1.LinkAttribute(VBO1, 1, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)(3 * sizeof(GLfloat)));
+
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
 	EBO EBO1(triangle, sizeof(triangle));
-
-	//link the Vertex Buffer to Vertex Array Object (tell shaders how to interpret vertex data)
-	VAO1.LinkVBO(VBO1, 0);
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
@@ -124,7 +126,7 @@ int main()
 
 	float timeValue;
 	float modulatedValue;
-	GLuint vertexColorLocation;
+	GLuint alphaModulatorLocation;
 
 
 	while (!glfwWindowShouldClose(window))
@@ -138,16 +140,18 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
 		
 
-		timeValue = glfwGetTime(); //time since Program execution has started (seconds)
+		timeValue = glfwGetTime(); //time since Program execution has started a(seconds)
 		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
-		vertexColorLocation = shaderProgram.GetUniformLoc("ProgColor"); //search compiled shader program for a "uniform" (global variable)
-		glUniform4f(vertexColorLocation, 0.0f, modulatedValue, 0.0f, 0.0f);
+		//passing data into a uniform (global shader variable)
+		alphaModulatorLocation = shaderProgram.GetUniformLoc("alphaModulator"); //search compiled shader program for a uniform
+		glUniform1f(alphaModulatorLocation, modulatedValue);
 
 
 		shaderProgram.Activate();
+		
 		VAO1.Bind();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		VAO1.UnBind();
 		
 		//VAO2 undefined as I'm not using that buffer data for shaders 

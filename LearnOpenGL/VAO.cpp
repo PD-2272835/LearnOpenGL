@@ -5,13 +5,13 @@ VAO::VAO()
 	glGenVertexArrays(1, &ID);
 }
 
-void VAO::LinkVBO(VBO VBO, GLuint layout)
+void VAO::LinkAttribute(VBO VBO, GLuint layout, GLuint numComponents, GLenum type, GLboolean normalized, GLsizeiptr stride, void* offset)
 {
 	VBO.Bind();
 	//--------------------Link vertex attributes-------------------
 	// (Tell Shaders How To Interpret The Vertex Data)
-	glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); //weird cast just tells opengl that the start of the vertex data is at the start of the vertex buffer
-	glEnableVertexAttribArray(layout);
+	glVertexAttribPointer(layout, numComponents, type, normalized, stride, offset); //weird cast just tells opengl that the start of the vertex data is at the start of the vertex buffer
+	glEnableVertexAttribArray(layout); //the layout number used by the vertex shader
 
 	VBO.Unbind();
 }
