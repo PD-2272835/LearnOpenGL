@@ -7,5 +7,5 @@ uniform vec4 ProgColor;
 
 void main()
 {
-	FragColor = vec4(ProgColor * VertexColor);
+	FragColor = vec4(ProgColor);
 }

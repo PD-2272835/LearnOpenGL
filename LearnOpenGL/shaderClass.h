@@ -18,6 +18,7 @@ class Shader
 
 		void Activate();
 		void Delete();
+		GLint GetUniformLoc(const char* uniform);
 };
 
 #endif

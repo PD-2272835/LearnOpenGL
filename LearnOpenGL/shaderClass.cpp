@@ -78,3 +78,8 @@ void Shader::Delete()
 {
 	glDeleteProgram(ID);
 }
+
+GLint Shader::GetUniformLoc(const char* uniform)
+{
+	return glGetUniformLocation(ID, uniform);
+}

@@ -64,23 +64,25 @@ int main()
 
 	//vertex data, describe vertices in normalized world coords
 	GLfloat vertices[] = {
-		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, //lower left corner : 0
-		0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, //lower right corner : 1
-		0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f, //top corner : 2
-		-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f, //inner left : 3
-		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f, //inner right : 4
-		0.0f,  -0.5f * float(sqrt(3)) / 3, 0.0f, //inner bottom : 5
+		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,		1.0f, 0.0f, 0.0f, //lower left corner : 0
+		0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,			0.0f, 1.0f, 0.0f, //lower right corner : 1
+		0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,		0.0, 1.0f, 0.0f, //top corner : 2
+		//just need the three far corners for using vertex data with shaders
+
+		/*-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	 //inner left : 3
+		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	 //inner right : 4
+		0.0f,  -0.5f * float(sqrt(3)) / 3, 0.0f, */	 //inner bottom : 5
 	};
 
 	//describe the triangles as an order of vertices using the index of each vertex in the VBO
-	GLuint indices[] = {
+	GLuint serpinsky[] = {
 		0, 3, 5, //left tri
 		5, 4, 1, //right tri
 		3, 4, 2 //top tri
 	};
 
-	GLuint indices2[] = {
-		3, 4, 5 //center tri
+	GLuint triangle[] = {
+		0, 1, 2 //whole triangle
 	};
 
 
@@ -96,7 +98,7 @@ int main()
 	VBO VBO1(vertices, sizeof(vertices));
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
-	EBO EBO1(indices, sizeof(indices));
+	EBO EBO1(triangle, sizeof(triangle));
 
 	//link the Vertex Buffer to Vertex Array Object (tell shaders how to interpret vertex data)
 	VAO1.LinkVBO(VBO1, 0);
@@ -107,12 +109,13 @@ int main()
 	VBO1.Unbind();
 	EBO1.Unbind();
 
+	/*
 	VAO VAO2;
 	VAO2.Bind();
-	EBO EBO2(indices2, sizeof(indices2));
+	EBO EBO2(indices, sizeof(indices));
 	VAO2.LinkVBO(VBO1, 0); //reuse first vetex buffer data
-
-
+	VAO2.UnBind();
+	*/
 
 
 
@@ -137,19 +140,21 @@ int main()
 
 		timeValue = glfwGetTime(); //time since Program execution has started (seconds)
 		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
-		vertexColorLocation = glGetUniformLocation(shaderProgram.ID, "ProgColor"); //search compiled shader program for a "uniform" (global variable)
+		vertexColorLocation = shaderProgram.GetUniformLoc("ProgColor"); //search compiled shader program for a "uniform" (global variable)
 		glUniform4f(vertexColorLocation, 0.0f, modulatedValue, 0.0f, 0.0f);
 
 
 		shaderProgram.Activate();
 		VAO1.Bind();
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 		VAO1.UnBind();
+		
+		//VAO2 undefined as I'm not using that buffer data for shaders 
+		/*
 		VAO2.Bind();
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-		VAO2.UnBind();
+		VAO2.UnBind(); */
 		
 		//check and call events + buffer swap to display next frame
 		glfwPollEvents();
