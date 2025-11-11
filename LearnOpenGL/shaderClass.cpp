@@ -82,24 +82,24 @@ void Shader::Delete()
 
 
 //search the compiled shader held by this class for a uniform called uniformName
-GLint Shader::GetUniformLocation(const char* uniformName)
+GLint Shader::GetUniformLocation(const char* uniformName) const
 {
 	return glGetUniformLocation(ID, uniformName);
 }
 
 
 //--------------setting uniform values by name--------------
-void Shader::SetBool(const char* name, bool value)
+void Shader::SetBool(const char* name, bool value) const
 {
 	glUniform1i(GetUniformLocation(name), (int)value);
 }
 
-void Shader::SetInt(const char* name, GLint value)
+void Shader::SetInt(const char* name, GLint value) const
 {
 	glUniform1i(GetUniformLocation(name), value);
 }
 
-void Shader::SetFloat(const char* name, GLfloat value)
+void Shader::SetFloat(const char* name, GLfloat value) const
 {
 	glUniform1f(GetUniformLocation(name), value);
 }

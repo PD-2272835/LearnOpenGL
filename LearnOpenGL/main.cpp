@@ -138,15 +138,17 @@ int main()
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
 		glClearColor(0.245f, 0.04f, 0.2f, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
 		glClear(GL_COLOR_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
-		
+		shaderProgram.Activate();
+
+		glEnable(GL_BLEND); 
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //enable color blending for transparency
 
 		timeValue = glfwGetTime(); //time since Program execution has started a(seconds)
 		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
-
-
-
-		shaderProgram.Activate();
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
+
+		
+		//std::cout << modulatedValue << std::endl; //this works, why does the shader not? unless it's to do with it interpolating vertex colour values?
 		
 		VAO1.Bind();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

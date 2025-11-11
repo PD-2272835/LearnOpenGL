@@ -13,7 +13,7 @@ std::string get_file_contents(const char* filename);
 class Shader
 {
 	private:
-		GLint GetUniformLocation(const char* uniformName);
+		GLint GetUniformLocation(const char* uniformName) const;
 
 	public:
 		GLuint ID;
@@ -22,9 +22,9 @@ class Shader
 		void Activate();
 		void Delete();
 
-		void SetBool(const char* name, bool value);
-		void SetInt(const char* name, GLint value);
-		void SetFloat(const char* name, GLfloat value);
+		void SetBool(const char* name, bool value) const;
+		void SetInt(const char* name, GLint value) const;
+		void SetFloat(const char* name, GLfloat value) const;
 };
 
 #endif
