@@ -2,6 +2,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+
 #include"shaderClass.h" //shader program class
 #include"VBO.h" //vertex buffer class
 #include"EBO.h" //element (index) buffer class
