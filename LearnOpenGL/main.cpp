@@ -151,8 +151,17 @@ int main()
 		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 
+
+		glm::mat4 transform = glm::mat4(1.0f); //initialize the identity matrix (1.0f on the diagonal)
+
+		//create transform into a translation matrix by 0.5, -0.5, 0.0
+		transform = glm::translate(transform, glm::vec3(0.5, -0.5f, 0.0f));
+		transform = glm::rotate(transform, timeValue, glm::vec3(0.0, 0.0, 1.0));
+		transform = glm::scale(transform, glm::vec3(0.5f, 0.5f, 0.5f));
+
+		shaderProgram.SetMat4("transform", transform);
+	
 		
-		//std::cout << modulatedValue << std::endl; //this works, why does the shader not? unless it's to do with it interpolating vertex colour values?
 		
 		VAO1.Bind();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -166,7 +175,7 @@ int main()
 		VAO2.UnBind(); */
 		
 		//check and call events + buffer swap to display next frame
-		glfwPollEvents();
+		glfwPollEvents(); 
 		glfwSwapBuffers(window);
 	}
 

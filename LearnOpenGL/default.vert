@@ -4,8 +4,10 @@ layout (location = 1) in vec3 aColor;
 
 out vec3 VertexColor; //output to fragment shader
 
+uniform mat4 transform;
+
 void main()
 {
-   gl_Position = vec4(aPos, 1.0); //can pass vectors into other vectors constructors
+   gl_Position = transform * vec4(aPos, 1.0); //can pass vectors into other vectors constructors
    VertexColor = aColor;
 }
