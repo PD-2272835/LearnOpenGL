@@ -11,8 +11,8 @@
 #include"EBO.h" //element (index) buffer class
 #include"VAO.h" //vertex array object class
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 1280.0f
+#define WINDOW_HEIGHT 720.0f
 
 
 //each time the window is resized, set the viewport width and height to the new resize
@@ -66,28 +66,28 @@ int main()
 	//------------------Set Up The Data We Send To The GPU------------------
 	// A buffer is used so that all data is sent at once, reducing latency as the GPU is much faster than the CPU
 
-	//vertex data, describe vertices in normalized world coords
+
 	GLfloat vertices[] = {
-		//Layout 0 - aPos									Layout 1 - aColor
-		-0.5f,	-0.5f * float(sqrt(3)) / 3,		0.0f,		1.0f, 0.0f, 0.0f,	//lower left corner : 0		(red)
-		0.5f,	-0.5f * float(sqrt(3)) / 3,		0.0f,		0.0f, 1.0f, 0.0f,	//lower right corner : 1	(green)
-		0.0f,	 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,		0.0, 0.0f, 1.0f,	//top corner : 2			(blue)
-		
-		//just need the three far corners for using vertex data with shaders
-		/*-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	 //inner left : 3
-		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	 //inner right : 4
-		0.0f,  -0.5f * float(sqrt(3)) / 3, 0.0f, */	 //inner bottom : 5
+		//Layout 0 - aPos			Layout 1 - aColor
+		-1,		-1,		-1,			//1.0f, 0.0f, 0.0f,	//0
+		1,		-1,		-1,			//0.5f, 0.5f, 0.0f,	//1
+		1,		1,		-1,			//0.0f, 0.5f, 0.5f,	//2
+		-1,		1,		-1,			//0.0f, 0.0f, 1.0f	//3
+
+		-1,		-1,		1,			//1.0f, 0.0f, 0.0f,	//4
+		1,		-1,		1,			//0.5f, 0.5f, 0.0f,	//5
+		1,		1,		1,			//0.0f, 0.5f, 0.5f,	//6
+		-1,		1,		1,			//0.0f, 0.0f, 1.0f	//7
 	};
 
-	//describe the triangles as an order of vertices using the index of each vertex in the VBO
-	GLuint serpinsky[] = {
-		0, 3, 5, //left tri
-		5, 4, 1, //right tri
-		3, 4, 2 //top tri
-	};
 
-	GLuint triangle[] = {
-		0, 1, 2 //whole triangle
+	GLuint cube[] = {
+		0, 1, 3, 3, 1, 2,
+		1, 5, 2, 2, 5, 6,
+		5, 4, 6, 6, 4, 7,
+		4, 0, 7, 7, 0, 3,
+		3, 2, 7, 7, 2, 6,
+		4, 5, 0, 0, 5, 1
 	};
 
 
@@ -102,27 +102,18 @@ int main()
 	//Generate Vertex Buffer Object and link the vertex data defined above into it
 	VBO VBO1(vertices, sizeof(vertices));
 
-	//defining the location of vertex attributes - 0: position, 1: colour
-	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)0);
+	//defining the location of vertex attributes(Layout) - 0: position, 1: colour
+	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 3 * (sizeof(GLfloat)), (void*)0);
 	VAO1.LinkAttribute(VBO1, 1, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)(3 * sizeof(GLfloat)));
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
-	EBO EBO1(triangle, sizeof(triangle));
+	EBO EBO1(cube, sizeof(cube));
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
 	VAO1.UnBind();
 	VBO1.Unbind();
 	EBO1.Unbind();
-
-	/*
-	VAO VAO2;
-	VAO2.Bind();
-	EBO EBO2(indices, sizeof(indices));
-	VAO2.LinkVBO(VBO1, 0); //reuse first vetex buffer data
-	VAO2.UnBind();
-	*/
-
 
 
 
@@ -131,7 +122,7 @@ int main()
 	float timeValue;
 	float modulatedValue;
 	GLuint alphaModulatorLocation;
-
+	glm::mat4 transform;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -141,38 +132,50 @@ int main()
 		//rendering (pipeline (* for where we can inject custom shader)
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
 		glClearColor(0.245f, 0.04f, 0.2f, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
-		glClear(GL_COLOR_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
-		shaderProgram.Activate();
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
 
 		glEnable(GL_BLEND); 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //enable color blending for transparency
 
+		shaderProgram.Activate();
+		
+		
 		timeValue = glfwGetTime(); //time since Program execution has started a(seconds)
 		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
+		
 
 
-		glm::mat4 transform = glm::mat4(1.0f); //initialize the identity matrix (1.0f on the diagonal)
 
-		//create transform into a translation matrix by 0.5, -0.5, 0.0
-		transform = glm::translate(transform, glm::vec3(0.5, -0.5f, 0.0f));
-		transform = glm::rotate(transform, timeValue, glm::vec3(0.0, 0.0, 1.0));
-		transform = glm::scale(transform, glm::vec3(0.5f, 0.5f, 0.5f));
+		//initialize the identity matrix (1.0f on the diagonal)
+		transform = glm::mat4(1.0f); //transform is the model matrix
+		//transform = glm::rotate(transform, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime() * glm::radians(30.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
-		shaderProgram.SetMat4("transform", transform);
-	
+		shaderProgram.SetMat4("model", transform);
+
+
+		glm::mat4 view = glm::mat4(1.0f); //view matrix *is* the camera
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+		shaderProgram.SetMat4("view", view);
+
+
+		glm::mat4 projection = glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
+		shaderProgram.SetMat4("projection", projection);
+
+		//when creating a tranformation matrix, order is important - translate -> rotate -> scale
 		
 		
 		VAO1.Bind();
+		EBO1.Bind();
+
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
 		VAO1.UnBind();
+		EBO1.Unbind();
 		
-		//VAO2 undefined as I'm not using that buffer data for shaders 
-		/*
-		VAO2.Bind();
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-		VAO2.UnBind(); */
 		
 		//check and call events + buffer swap to display next frame
 		glfwPollEvents(); 

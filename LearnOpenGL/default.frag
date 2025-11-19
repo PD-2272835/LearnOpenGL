@@ -7,5 +7,5 @@ uniform float alphaModulator;
 
 void main()
 {
-	FragColor = vec4(VertexColor, alphaModulator);
+	FragColor = vec4(VertexColor, 1.0f);
 }

@@ -4,10 +4,16 @@ layout (location = 1) in vec3 aColor;
 
 out vec3 VertexColor; //output to fragment shader
 
-uniform mat4 transform;
+
+uniform mat4 model; //tranform from local to world space
+uniform mat4 view; //transform from world to view space
+uniform mat4 projection; //transform from view to clip space
+
 
 void main()
 {
-   gl_Position = transform * vec4(aPos, 1.0); //can pass vectors into other vectors constructors
-   VertexColor = aColor;
+	// Vclip = Mproj * Mview * Mmodel * Vlocal
+	gl_Position = projection * view * model * vec4(aPos, 1.0);
+
+	VertexColor = aColor;
 }
