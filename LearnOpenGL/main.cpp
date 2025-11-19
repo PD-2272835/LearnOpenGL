@@ -41,7 +41,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//create a window object
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Tommy sucks peen", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "The Legend Of Cube: Tears of the Cube (lawsuit incoming)", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "failed to create window" << std::endl;
@@ -68,20 +68,20 @@ int main()
 
 
 	GLfloat vertices[] = {
-		//Layout 0 - aPos			Layout 1 - aColor
-		-1,		-1,		-1,			//1.0f, 0.0f, 0.0f,	//0
-		1,		-1,		-1,			//0.5f, 0.5f, 0.0f,	//1
-		1,		1,		-1,			//0.0f, 0.5f, 0.5f,	//2
-		-1,		1,		-1,			//0.0f, 0.0f, 1.0f	//3
+		//Layout 0 - aPos
+		-1.0f,		-1.0f,		-1.0f,		1.0f, 0.0f, 0.0f,//0
+		1.0f,		-1.0f,		-1.0f,		0.5f, 0.5f, 0.0f,//1
+		1.0f,		1.0f,		-1.0f,		0.0f, 0.5f, 0.5f,//2
+		-1.0f,		1.0f,		-1.0f,		0.0f, 0.0f, 1.0f,//3
 
-		-1,		-1,		1,			//1.0f, 0.0f, 0.0f,	//4
-		1,		-1,		1,			//0.5f, 0.5f, 0.0f,	//5
-		1,		1,		1,			//0.0f, 0.5f, 0.5f,	//6
-		-1,		1,		1,			//0.0f, 0.0f, 1.0f	//7
+		-1.0f,		-1.0f,		1.0f,		1.0f, 0.0f, 0.0f,//4
+		1.0f,		-1.0f,		1.0f,		0.5f, 0.5f, 0.0f,//5
+		1.0f,		1.0f,		1.0f,		0.0f, 0.5f, 0.5f,//6
+		-1.0f,		1.0f,		1.0f,		0.0f, 0.0f, 1.0f//7
 	};
 
 
-	GLuint cube[] = {
+	GLuint cubeIndices[] = {
 		0, 1, 3, 3, 1, 2,
 		1, 5, 2, 2, 5, 6,
 		5, 4, 6, 6, 4, 7,
@@ -89,7 +89,6 @@ int main()
 		3, 2, 7, 7, 2, 6,
 		4, 5, 0, 0, 5, 1
 	};
-
 
 
 	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
@@ -103,11 +102,11 @@ int main()
 	VBO VBO1(vertices, sizeof(vertices));
 
 	//defining the location of vertex attributes(Layout) - 0: position, 1: colour
-	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 3 * (sizeof(GLfloat)), (void*)0);
+	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)0);
 	VAO1.LinkAttribute(VBO1, 1, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)(3 * sizeof(GLfloat)));
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
-	EBO EBO1(cube, sizeof(cube));
+	EBO EBO1(cubeIndices, sizeof(cubeIndices));
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
