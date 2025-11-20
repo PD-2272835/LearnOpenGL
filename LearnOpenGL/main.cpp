@@ -169,6 +169,19 @@ int main()
 	EBO1.Unbind();
 
 
+	//--------------------------------------------Camera--------------------------------------------
+	glm::vec3 up = glm::vec3(0, 1, 0); //world space up
+
+	glm::vec3 cameraPos = glm::vec3(0.0f);
+	glm::vec3 cameraTarget = glm::vec3(0.0f);
+
+	//camera coordinate system
+	glm::vec3 cameraDirection;
+	glm::vec3 cameraRight;
+	glm::vec3 cameraUp;
+
+	glm::mat4 view;
+
 
 	//----------------------------------------------------------Main Loop----------------------------------------------------------
 
@@ -200,11 +213,19 @@ int main()
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 		
 
-
-
+		cameraDirection = glm::normalize(cameraPos - cameraTarget);
+		cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+		cameraUp = glm::cross(cameraDirection, cameraRight); //this will already return a normalized vector as direction and right are both unit vectors themselves
+		
 		//initialize the identity matrix (1.0f on the diagonal)
 		glm::mat4 view = glm::mat4(1.0f); //view matrix *is* the camera
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f));
+
+		const float radius = 30.0f;
+		cameraPos.x = sin(timeValue) * radius;
+		cameraPos.z = cos(timeValue) * radius;
+		view = glm::lookAt(cameraPos, glm::vec3(0.0f), cameraUp);
+
+
 		shaderProgram.SetMat4("view", view);
 
 
@@ -224,12 +245,9 @@ int main()
 			transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, objectPositions[i]);
 			float angle = 20.0f * i;
-			if (i % 3 == 0) {
-				transform *= glm::rotate(transform, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.25f));
-			}
-			else {
-				transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
-			}
+			transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
+
+
 			shaderProgram.SetMat4("model", transform);
 			glDrawElements(GL_TRIANGLES, sizeof(cobraIndices), GL_UNSIGNED_INT, 0);
 		}
