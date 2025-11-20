@@ -90,6 +90,60 @@ int main()
 		4, 5, 0, 0, 5, 1
 	};
 
+	GLfloat cobraVertices[] = {
+		//x			y			z			r	  g		b
+		0.4f,		0.0f,		0.9f,		1.0f, 0.0f, 0.0f,	//0
+		-0.4f,		0.0f,		0.9f,		0.0f, 1.0f, 0.0f,	//1
+		0.0f,		0.3f,		0.0f,		0.0f, 0.0f, 1.0f,	//2*
+		-1.9f,		0.0f,		-0.7f,		1.0f, 0.0f, 0.0f,	//3
+		1.9f,		0.0f,		-0.7f,		0.0f, 1.0f, 0.0f,	//4
+		-1.4f,		0.2f,		-1.0f,		0.0f, 0.0f, 1.0f,	//5*
+		1.4f,		0.2f,		-1.0f,		1.0f, 0.0f, 0.0f,	//6*
+		2.0f,		0.0f,		-1.0f,		0.0f, 1.0f, 0.0f,	//7
+		-2.0f,		0.0f,		-1.0f,		0.0f, 0.0f, 1.0f,	//8
+		0.0f,		0.3f,		-1.0f,		1.0f, 0.0f, 0.0f,	//9*
+
+		0.0f,		-0.3f,		0.0f,		0.0f, 1.0f, 0.0f,	//10*
+		-1.5f,		-0.2f,		-1.0f,		0.0f, 0.0f, 1.0f,	//11*
+		1.5f,		-0.2f,		-1.0f,		1.0f, 0.0f, 0.0f,	//12*
+		0.0f,		-0.3f,		-1.0f,		0.0f, 1.0f, 0.0f,	//13*
+	};
+
+	GLuint cobraIndices[] = {
+		0, 1, 2, //F0
+		1, 2, 5, //F1
+		0, 2, 6, //F2
+		1, 5, 3, //F3
+		0, 6, 4, //F4
+		2, 5, 9, //F5
+		2, 6, 9, //F6
+		3, 5, 8, //F7
+		4, 6, 7, //F8
+
+		0, 1, 10, //F9
+		1, 10, 11, //F10
+		0, 10, 12, //F11
+		1, 11, 3, //F12
+		0, 12, 4, //F13
+		10, 11, 13, //F14
+		10, 12, 13, //F15
+		3, 11, 8, //F16
+		4, 12, 7, //F17
+	};
+
+	glm::vec3 objectPositions[] = {
+	glm::vec3(0.0f,  0.0f,  0.0f),
+	glm::vec3(2.0f,  5.0f, -15.0f),
+	glm::vec3(-1.5f, -2.2f, -2.5f),
+	glm::vec3(-3.8f, -2.0f, -12.3f),
+	glm::vec3(2.4f, -0.4f, -3.5f),
+	glm::vec3(-1.7f,  3.0f, -7.5f),
+	glm::vec3(1.3f, -2.0f, -2.5f),
+	glm::vec3(1.5f,  2.0f, -2.5f),
+	glm::vec3(1.5f,  0.2f, -1.5f),
+	glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 
 	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
 	Shader shaderProgram("default.vert", "default.frag");
@@ -99,14 +153,14 @@ int main()
 	VAO1.Bind();
 
 	//Generate Vertex Buffer Object and link the vertex data defined above into it
-	VBO VBO1(vertices, sizeof(vertices));
+	VBO VBO1(cobraVertices, sizeof(cobraVertices));
 
 	//defining the location of vertex attributes(Layout) - 0: position, 1: colour
 	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)0);
 	VAO1.LinkAttribute(VBO1, 1, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)(3 * sizeof(GLfloat)));
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
-	EBO EBO1(cubeIndices, sizeof(cubeIndices));
+	EBO EBO1(cobraIndices, sizeof(cobraIndices));
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
@@ -130,7 +184,8 @@ int main()
 
 		//rendering (pipeline (* for where we can inject custom shader)
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
-		glClearColor(0.245f, 0.04f, 0.2f, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
+		//glClearColor(0.245f, 0.04f, 0.2f, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
 
@@ -148,15 +203,8 @@ int main()
 
 
 		//initialize the identity matrix (1.0f on the diagonal)
-		transform = glm::mat4(1.0f); //transform is the model matrix
-		//transform = glm::rotate(transform, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime() * glm::radians(30.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-
-		shaderProgram.SetMat4("model", transform);
-
-
 		glm::mat4 view = glm::mat4(1.0f); //view matrix *is* the camera
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f));
 		shaderProgram.SetMat4("view", view);
 
 
@@ -169,8 +217,22 @@ int main()
 		VAO1.Bind();
 		EBO1.Bind();
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		for (int i = 0; i < 10; i++) {
+
+			transform = glm::mat4(1.0f);
+			transform = glm::translate(transform, objectPositions[i]);
+			float angle = 20.0f * i;
+			if (i % 3 == 0) {
+				transform *= glm::rotate(transform, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.25f));
+			}
+			else {
+				transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
+			}
+			shaderProgram.SetMat4("model", transform);
+			glDrawElements(GL_TRIANGLES, sizeof(cobraIndices), GL_UNSIGNED_INT, 0);
+		}
 
 		VAO1.UnBind();
 		EBO1.Unbind();
