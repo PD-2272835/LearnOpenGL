@@ -22,13 +22,12 @@ float lastFrameTime;
 //--------------------------------------------Camera--------------------------------------------
 glm::vec3 up = glm::vec3(0, 1, 0); //world space up
 
-glm::vec3 cameraPos = glm::vec3(0.0f);
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-//camera coordinate system
-glm::vec3 cameraDirection;
-glm::vec3 cameraRight;
-glm::vec3 cameraUp;
+float yaw = -90.0f;
+float pitch = 0.0f;
 
 glm::mat4 view;
 
@@ -51,21 +50,57 @@ void processInput(GLFWwindow* window)
 	//this movement is actually terrible, if two movement buttons are pressed, their vector direction is not normalized
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		cameraPos += cameraSpeed * cameraTarget;
+		cameraPos += cameraSpeed * cameraFront;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		cameraPos -= cameraSpeed * cameraTarget;
+		cameraPos -= cameraSpeed * cameraFront;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		cameraPos += glm::normalize(glm::cross(cameraTarget, cameraUp)) * cameraSpeed;
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		cameraPos -= glm::normalize(glm::cross(cameraTarget, cameraUp)) * cameraSpeed;
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
 }
+
+
+float lastX = WINDOW_WIDTH / 2, lastY = WINDOW_HEIGHT / 2;
+bool firstMouse = true;
+
+void mouseCallback(GLFWwindow* window, double xPos, double yPos)
+{
+	if (firstMouse)
+	{
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+	}
+
+	float xOffset = xPos - lastX;
+	float yOffset = lastY - yPos;
+	lastX = xPos;
+	lastY = yPos;
+
+	const float sensitivity = 0.1f;
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+
+	yaw += xOffset;
+	pitch += yOffset;
+
+	if (pitch >= 89.9f) { pitch = 89.9f; }
+	if (pitch <= -89.9f) { pitch = -89.9f; }
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw) * cos(glm::radians(pitch)));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw) * cos(glm::radians(pitch)));
+	cameraFront = glm::normalize(front);
+}
+
 
 int main()
 {
@@ -97,6 +132,9 @@ int main()
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); //establish rendering viewport (same size as window)
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); //bind the window resize callback
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
 
 
 
@@ -235,16 +273,11 @@ int main()
 		modulatedValue = (sin(currentFrame) / 2.0f) + 0.5f;
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 		
-
-		cameraDirection = glm::normalize(cameraPos - cameraTarget);
-		cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-		cameraUp = glm::cross(cameraDirection, cameraRight); //this will already return a normalized vector as direction and right are both unit vectors themselves
 		
 		
 		//initialize the identity matrix (1.0f on the diagonal)
 		glm::mat4 view = glm::mat4(1.0f); //view matrix *is* the camera
-
-		view = glm::lookAt(cameraPos, cameraPos + cameraTarget, cameraUp);
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 
 		shaderProgram.SetMat4("view", view);
