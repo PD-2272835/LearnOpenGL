@@ -14,6 +14,24 @@
 #define WINDOW_WIDTH 1280.0f
 #define WINDOW_HEIGHT 720.0f
 
+//frame times
+float deltaTime;
+float lastFrameTime;
+
+
+//--------------------------------------------Camera--------------------------------------------
+glm::vec3 up = glm::vec3(0, 1, 0); //world space up
+
+glm::vec3 cameraPos = glm::vec3(0.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, -1.0f);
+
+//camera coordinate system
+glm::vec3 cameraDirection;
+glm::vec3 cameraRight;
+glm::vec3 cameraUp;
+
+glm::mat4 view;
+
 
 //each time the window is resized, set the viewport width and height to the new resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -23,10 +41,29 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
+	const float cameraSpeed = 2.5f * deltaTime;
 	//close the process if escape key is pressed
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
+	}
+
+	//this movement is actually terrible, if two movement buttons are pressed, their vector direction is not normalized
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		cameraPos += cameraSpeed * cameraTarget;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		cameraPos -= cameraSpeed * cameraTarget;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		cameraPos += glm::normalize(glm::cross(cameraTarget, cameraUp)) * cameraSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		cameraPos -= glm::normalize(glm::cross(cameraTarget, cameraUp)) * cameraSpeed;
 	}
 }
 
@@ -169,29 +206,17 @@ int main()
 	EBO1.Unbind();
 
 
-	//--------------------------------------------Camera--------------------------------------------
-	glm::vec3 up = glm::vec3(0, 1, 0); //world space up
-
-	glm::vec3 cameraPos = glm::vec3(0.0f);
-	glm::vec3 cameraTarget = glm::vec3(0.0f);
-
-	//camera coordinate system
-	glm::vec3 cameraDirection;
-	glm::vec3 cameraRight;
-	glm::vec3 cameraUp;
-
-	glm::mat4 view;
-
-
 	//----------------------------------------------------------Main Loop----------------------------------------------------------
-
-	float timeValue;
 	float modulatedValue;
 	GLuint alphaModulatorLocation;
 	glm::mat4 transform;
 
 	while (!glfwWindowShouldClose(window))
 	{
+		float currentFrame = glfwGetTime(); //time since Program execution has started a(seconds)
+		deltaTime = currentFrame - lastFrameTime;
+		lastFrameTime = currentFrame;
+
 		//input
 		processInput(window);
 
@@ -207,9 +232,7 @@ int main()
 
 		shaderProgram.Activate();
 		
-		
-		timeValue = glfwGetTime(); //time since Program execution has started a(seconds)
-		modulatedValue = (sin(timeValue) / 2.0f) + 0.5f;
+		modulatedValue = (sin(currentFrame) / 2.0f) + 0.5f;
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 		
 
@@ -217,13 +240,11 @@ int main()
 		cameraRight = glm::normalize(glm::cross(up, cameraDirection));
 		cameraUp = glm::cross(cameraDirection, cameraRight); //this will already return a normalized vector as direction and right are both unit vectors themselves
 		
+		
 		//initialize the identity matrix (1.0f on the diagonal)
 		glm::mat4 view = glm::mat4(1.0f); //view matrix *is* the camera
 
-		const float radius = 30.0f;
-		cameraPos.x = sin(timeValue) * radius;
-		cameraPos.z = cos(timeValue) * radius;
-		view = glm::lookAt(cameraPos, glm::vec3(0.0f), cameraUp);
+		view = glm::lookAt(cameraPos, cameraPos + cameraTarget, cameraUp);
 
 
 		shaderProgram.SetMat4("view", view);
@@ -259,6 +280,7 @@ int main()
 		//check and call events + buffer swap to display next frame
 		glfwPollEvents(); 
 		glfwSwapBuffers(window);
+		glfwSwapInterval(1);
 	}
 
 	//release all allocated resources after main render loop ends
@@ -272,4 +294,3 @@ int main()
 	glfwTerminate();
 	return 0;
 }
-
