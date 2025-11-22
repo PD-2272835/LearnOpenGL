@@ -91,13 +91,13 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 	yaw += xOffset;
 	pitch += yOffset;
 
-	if (pitch >= 89.9f) { pitch = 89.9f; }
-	if (pitch <= -89.9f) { pitch = -89.9f; }
+	if (pitch >= 89.0f) { pitch = 89.0f; }
+	if (pitch <= -89.0f) { pitch = -89.0f; }
 
 	glm::vec3 front;
-	front.x = cos(glm::radians(yaw) * cos(glm::radians(pitch)));
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw) * cos(glm::radians(pitch)));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	cameraFront = glm::normalize(front);
 }
 
