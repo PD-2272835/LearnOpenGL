@@ -6,10 +6,11 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-#include"shaderClass.h" //shader program class
-#include"VBO.h" //vertex buffer class
-#include"EBO.h" //element (index) buffer class
-#include"VAO.h" //vertex array object class
+#include "CameraClass.h"
+#include "shaderClass.h" //shader program class
+#include "VBO.h" //vertex buffer class
+#include "EBO.h" //element (index) buffer class
+#include "VAO.h" //vertex array object class
 
 #define WINDOW_WIDTH 1280.0f
 #define WINDOW_HEIGHT 720.0f
@@ -18,19 +19,7 @@
 float deltaTime;
 float lastFrameTime;
 
-
-//--------------------------------------------Camera--------------------------------------------
-glm::vec3 up = glm::vec3(0, 1, 0); //world space up
-
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-float yaw = -90.0f;
-float pitch = 0.0f;
-
-glm::mat4 view;
-
+Camera mainCamera;
 
 //each time the window is resized, set the viewport width and height to the new resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -40,29 +29,29 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
-	const float cameraSpeed = 2.5f * deltaTime;
 	//close the process if escape key is pressed
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
 
+
 	//this movement is actually terrible, if two movement buttons are pressed, their vector direction is not normalized
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		cameraPos += cameraSpeed * cameraFront;
+		mainCamera.ProcessKeyboard(FORWARD, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		cameraPos -= cameraSpeed * cameraFront;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		mainCamera.ProcessKeyboard(BACKWARD, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		mainCamera.ProcessKeyboard(LEFT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		mainCamera.ProcessKeyboard(RIGHT, deltaTime);
 	}
 }
 
@@ -84,21 +73,7 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 	lastX = xPos;
 	lastY = yPos;
 
-	const float sensitivity = 0.1f;
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
-
-	yaw += xOffset;
-	pitch += yOffset;
-
-	if (pitch >= 89.0f) { pitch = 89.0f; }
-	if (pitch <= -89.0f) { pitch = -89.0f; }
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
+	mainCamera.ProcessMouseMovement(xOffset, yOffset);
 }
 
 
@@ -274,13 +249,8 @@ int main()
 		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 		
 		
-		
-		//initialize the identity matrix (1.0f on the diagonal)
-		glm::mat4 view = glm::mat4(1.0f); //view matrix *is* the camera
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-
-		shaderProgram.SetMat4("view", view);
+		//View Matrix *is* the camera
+		shaderProgram.SetMat4("view", mainCamera.GetViewMatrix());
 
 
 		glm::mat4 projection = glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
