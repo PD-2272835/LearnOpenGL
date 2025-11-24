@@ -9,6 +9,7 @@
 
 //other files
 #include "CameraClass.h"
+#include "Mesh.h"
 #include "shaderClass.h" //shader program class
 #include "VBO.h" //vertex buffer class
 #include "EBO.h" //element (index) buffer class
@@ -213,17 +214,17 @@ int main()
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
 	EBO EBO1(cobraIndices, sizeof(cobraIndices));
+	Mesh Cobra(VAO1, EBO1, shaderProgram);
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
-	VAO1.UnBind();
+	VAO1.Unbind();
 	VBO1.Unbind();
 	EBO1.Unbind();
 
 
 	//----------------------------------------------------------Main Loop----------------------------------------------------------
 	float modulatedValue;
-	GLuint alphaModulatorLocation;
 	glm::mat4 transform;
 
 	while (!glfwWindowShouldClose(window))
@@ -261,8 +262,6 @@ int main()
 		//when creating a tranformation matrix, order is important - translate -> rotate -> scale
 		
 		
-		VAO1.Bind();
-		EBO1.Bind();
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -272,15 +271,13 @@ int main()
 			transform = glm::translate(transform, objectPositions[i]);
 			float angle = 20.0f * i;
 			transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
+			
+			
+			Transform newTransform(objectPositions[i]);
 
-
-			shaderProgram.SetMat4("model", transform);
-			glDrawElements(GL_TRIANGLES, sizeof(cobraIndices), GL_UNSIGNED_INT, 0);
+			Cobra.Render(newTransform);
 		}
 
-		VAO1.UnBind();
-		EBO1.Unbind();
-		
 		
 		//check and call events + buffer swap to display next frame
 		glfwPollEvents(); 

@@ -12,7 +12,7 @@ class VAO
 
 		void LinkAttribute(VBO VBO, GLuint layout, GLuint numComponents, GLenum type, GLboolean normalized, GLsizeiptr stride, void* offset);
 		void Bind();
-		void UnBind();
+		void Unbind();
 		void Delete();
 };
 

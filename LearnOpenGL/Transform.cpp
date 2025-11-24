@@ -2,14 +2,15 @@
 #define TRANSFORM_H
 #include "Transform.h"
 
-Transform Transform::Origin()
+
+glm::mat4 Transform::Origin()
 {
-	return;
+	return glm::mat4(1.0f);
 }
 
-Transform Transform::Combine(Transform& other)
+/*Transform Transform::Combine(Transform& other)
 {
 	return;
-}
+}*/
 
 #endif
