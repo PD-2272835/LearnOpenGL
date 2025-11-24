@@ -2,10 +2,12 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+//Math Libraries
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
+//other files
 #include "CameraClass.h"
 #include "shaderClass.h" //shader program class
 #include "VBO.h" //vertex buffer class
