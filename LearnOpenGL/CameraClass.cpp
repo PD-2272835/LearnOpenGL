@@ -17,7 +17,6 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 
 	if (direction == FORWARD) {
 		Position += Front * velocity;
-		std::cout << Front.x << Front.y << Front.z << std::endl;
 	}
 	if (direction == BACKWARD) {
 		Position -= Front * velocity;

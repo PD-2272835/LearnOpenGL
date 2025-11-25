@@ -1,4 +1,5 @@
 //adapted from https://gamedev.stackexchange.com/questions/94061/rotating-an-object-with-quaternion
+//and https://gameprogrammingpatterns.com/dirty-flag.html
 
 #pragma once
 
@@ -13,29 +14,36 @@ public:
 	glm::vec3 Position;
 	glm::vec3 Scale;
 	glm::quat Rotation; 
+	glm::mat4 Matrix;
 
 
-	//constructor with default values
-	Transform(glm::vec3 position = glm::vec3(0.0f), glm::vec3 scale = glm::vec3(1.0f), glm::quat rotation = glm::quat(sqrt(1.f / 2), 0, sqrt(1.f / 2), 0))
+	//constructor with default values - the quaternion default is a unit quaternion (no transformation)
+	Transform(glm::vec3 position = glm::vec3(0.0f), glm::vec3 scale = glm::vec3(1.0f), glm::quat rotation = glm::quat(1.0, 0.0, 0.0, 0.0)) : Matrix(glm::mat4(1.f))
 	{
 		Position = position;
 		Scale = scale;
 		Rotation = rotation;
+		CalculateMatrix();
 	};
 
 	//use a Transform and glm::mat4 interchangably
 	operator glm::mat4() const
 	{
-		glm::mat4 translate = glm::translate(glm::mat4(1.0), Position);
-		glm::mat4 rotate = glm::mat4_cast(Rotation);
-		glm::mat4 scale = glm::scale(glm::mat4(1.0), Scale);
+		return Matrix;
+	}
 
-		return translate * rotate * scale;
-	};
+	//allow explicit casting to a mat4
+	explicit operator glm::mat4() const
+	{
+		return Matrix;
+	}
 
 
-	static glm::mat4 Origin();//identity matrix representative of parent origin
+	static Transform Origin(); //identity matrix representative of parent origin
 
-	//Transform Combine(Transform& other);
+	Transform Combine(Transform& other);
+
+private:
+	void CalculateMatrix();
 };
 
