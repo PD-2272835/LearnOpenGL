@@ -9,6 +9,7 @@
 
 //other files
 #include "CameraClass.h"
+#include "GraphNode.h"
 #include "Mesh.h"
 #include "shaderClass.h" //shader program class
 #include "VBO.h" //vertex buffer class
@@ -214,7 +215,6 @@ int main()
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
 	EBO EBO1(cobraIndices, sizeof(cobraIndices));
-	Mesh Cobra(VAO1, EBO1, shaderProgram);
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
@@ -226,6 +226,8 @@ int main()
 	//----------------------------------------------------------Main Loop----------------------------------------------------------
 	float modulatedValue;
 	glm::mat4 transform;
+	Mesh Cobra(VAO1, EBO1, shaderProgram);
+	Node Scene(&Cobra);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -271,11 +273,8 @@ int main()
 			transform = glm::translate(transform, objectPositions[i]);
 			float angle = 20.0f * i;
 			transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
-			
-			
-			Transform newTransform(objectPositions[i]);
 
-			Cobra.Render(newTransform);
+			Cobra.Render(transform);
 		}
 
 		

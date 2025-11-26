@@ -2,7 +2,6 @@
 #include "VAO.h";
 #include "EBO.h";
 #include "shaderClass.h"
-#include "Transform.h"
 
 class Mesh
 {
@@ -18,6 +17,6 @@ public:
 		ShaderProgram = &shaderProgram;
 	};
 
-	void Render(Transform& transform);
+	void Render(glm::mat4& transform);
 };
 

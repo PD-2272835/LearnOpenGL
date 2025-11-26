@@ -26,22 +26,15 @@ public:
 		CalculateMatrix();
 	};
 
-	//use a Transform and glm::mat4 interchangably
+	//allow Transform to be cast to a matrix transformation
 	operator glm::mat4() const
 	{
 		return Matrix;
 	}
 
-	//allow explicit casting to a mat4
-	explicit operator glm::mat4() const
-	{
-		return Matrix;
-	}
+	static glm::mat4 Origin(); //identity matrix representative of parent origin
 
-
-	static Transform Origin(); //identity matrix representative of parent origin
-
-	Transform Combine(Transform& other);
+	glm::mat4 Combine(Transform& other);
 
 private:
 	void CalculateMatrix();

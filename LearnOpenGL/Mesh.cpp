@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-void Mesh::Render(Transform& transform)
+void Mesh::Render(glm::mat4& transform)
 {
 	Vertices->Bind();
 	Elements->Bind();
