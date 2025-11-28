@@ -120,7 +120,7 @@ int main()
 	//------------------Set Up The Data We Send To The GPU------------------
 	// A buffer is used so that all data is sent at once, reducing latency as the GPU is much faster than the CPU
 
-
+		
 	GLfloat vertices[] = {
 		//Layout 0 - aPos
 		-1.0f,		-1.0f,		-1.0f,		1.0f, 0.0f, 0.0f,//0
@@ -227,7 +227,12 @@ int main()
 	float modulatedValue;
 	glm::mat4 transform;
 	Mesh Cobra(VAO1, EBO1, shaderProgram);
-	Node Scene(&Cobra);
+	Node Scene;
+
+	for (int i = 0; i < 10; i++)
+	{
+		Scene.SetChild(new Node(&Cobra));
+	}
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -289,6 +294,7 @@ int main()
 	VBO1.Delete();
 	EBO1.Delete();
 	shaderProgram.Delete();
+	Scene.Destroy(true);
 
 
 	glfwDestroyWindow(window);
