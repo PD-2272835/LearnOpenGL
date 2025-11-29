@@ -229,10 +229,19 @@ int main()
 	Mesh Cobra(VAO1, EBO1, shaderProgram);
 	Node Scene;
 
+	//initialize the Game Scene
 	for (int i = 0; i < 10; i++)
 	{
-		Scene.SetChild(new Node(&Cobra));
+		Node* current = new Node(&Cobra);
+		current->transform.position = objectPositions[i];
+		float angle = 20.0f * i;
+		current->transform.rotation = glm::rotate(current->transform.rotation, glm::radians(angle), objectPositions[i]);
+		current->transform.scale = glm::vec3(1.0f);
+		Scene.SetChild(current);
+
 	}
+
+	bool firstFrame = true;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -245,7 +254,8 @@ int main()
 
 		//rendering (pipeline (* for where we can inject custom shader)
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
-		//glClearColor(0.245f, 0.04f, 0.2f, 0.8f); //state *setting* function, specifiying the colour used to reset the colorBuffer
+
+
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
@@ -272,7 +282,7 @@ int main()
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		for (int i = 0; i < 10; i++) {
+		/*for (int i = 0; i < 10; i++) {
 
 			transform = glm::mat4(1.0f);
 			transform = glm::translate(transform, objectPositions[i]);
@@ -280,13 +290,16 @@ int main()
 			transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
 
 			Cobra.Render(transform);
-		}
+		}*/
+
+		Scene.Render(glm::mat4(1.0f), firstFrame);
 
 		
 		//check and call events + buffer swap to display next frame
 		glfwPollEvents(); 
 		glfwSwapBuffers(window);
 		glfwSwapInterval(1);
+		firstFrame = false;
 	}
 
 	//release all allocated resources after main render loop ends

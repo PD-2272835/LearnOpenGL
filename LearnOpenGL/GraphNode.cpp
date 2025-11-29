@@ -1,37 +1,36 @@
 #include "GraphNode.h"
 
-Node::~Node()
-{
-	delete[] _children; //vaguely less dubious?
-}
 
-void Node::Destroy(bool destroyChildren)
+
+void Node::Destroy(bool destroyChildren = true)
 {
 	if (destroyChildren)
 	{
-		for (int i = 0; i < _childCount; i++)
+		for (int i = 0; i < childCount_; i++)
 		{
-			_children[i]->Destroy(destroyChildren);
+			std::cout << children_[i] << " i: " << i << "\n";
+			children_[i]->Destroy(destroyChildren);
 		}
 	}
-	delete this;
+	delete[] children_;
+	this->~Node();
 }
 
 
 void Node::Render(glm::mat4 parentWorld, bool dirty)
 {
-
-	dirty |= _dirty;
+	dirty_ |= dirty;
 	if (dirty)
 	{
-		_world = parentWorld * _local;
+		local_ = CalculateLocalMatrix();
+		world_ = parentWorld * local_;
 	}
 
-	if (_mesh) _mesh->Render(_world);
+	if (mesh_) mesh_->Render(world_);
 
-	for (int i = 0; i < _childCount; i++)
+	for (int i = 0; i < childCount_; i++)
 	{
-		_children[i]->Render(_world, dirty);
+		children_[i]->Render(world_, dirty);
 	}
 }
 
@@ -40,15 +39,15 @@ void Node::SetChild(Node* newChild)
 {
 	//resize the children array with an extra buffer element in case of multiple SetChild calls, 
 	//hopefully reducing the number of times freestore will need to be managed in this way
-	if (_childCount + 1 >= _maxChildren)
+	if (childCount_ + 1 >= maxChildren_)
 	{
 		ResizeChildArray(2);
-		_maxChildren + 2;
 	}
+
 	//add the new child to children
-	_childCount++;
-	_children[_childCount] = newChild;
-	std::cout << "wrote new child\n";
+	children_[childCount_] = newChild;
+	childCount_++;
+	std::cout << "wrote new child: " << newChild << "\n";
 }
 
 void Node::SetParent(Node* newParent)
@@ -57,18 +56,35 @@ void Node::SetParent(Node* newParent)
 }
 
 
+glm::mat4 Node::CalculateLocalMatrix()
+{
+
+	glm::mat4 Matrix(1.f);
+	Matrix = glm::translate(Matrix, transform.position);
+	Matrix *= glm::mat4_cast(transform.rotation);
+	Matrix = glm::scale(Matrix, transform.scale);
+
+	//return translate * rotate * scale;
+	return Matrix;
+}
+
 
 void Node::ResizeChildArray(short extraSpace)
 {
-	Node** newArray = new Node* [_childCount + extraSpace];
+	Node** newArray = new Node* [childCount_ + extraSpace];
 	
-	std::cout << "boutta copy\n";
-	std::copy(_children, _children + _childCount, newArray); //there's something dubious here, I can feel it
-	std::cout << "copied\n";
-	//mayhaps a dubious?
-	delete[] _children;
-	std::cout << "deleted old array\n";
-	_children = newArray;
-	std::cout << "wrote new array to current\n";
-	_maxChildren += extraSpace;
+	std::copy(children_, children_ + childCount_, newArray); //there's something dubious here, I can feel it
+
+	delete[] children_;
+
+	maxChildren_ += extraSpace;
+	children_ = new Node* [maxChildren_];
+	
+	for (int i=0; i < maxChildren_ - childCount_; i++)
+	{
+		children_[i] = nullptr;
+	}
+
+	std::copy(newArray, newArray + maxChildren_, children_);
+	delete[] newArray;
 }
