@@ -233,12 +233,10 @@ int main()
 	for (int i = 0; i < 10; i++)
 	{
 		Node* current = new Node(&Cobra);
-		current->transform.position = objectPositions[i];
+		current->SetPosition(objectPositions[i]);
 		float angle = 20.0f * i;
-		current->transform.rotation = glm::rotate(current->transform.rotation, glm::radians(angle), objectPositions[i]);
-		current->transform.scale = glm::vec3(1.0f);
+		current->Rotate(angle, objectPositions[i]);
 		Scene.SetChild(current);
-
 	}
 
 	bool firstFrame = true;
@@ -266,7 +264,6 @@ int main()
 		shaderProgram.Activate();
 		
 		modulatedValue = (sin(currentFrame) / 2.0f) + 0.5f;
-		shaderProgram.SetFloat("alphaModulator", modulatedValue);
 		
 		
 		//View Matrix *is* the camera
@@ -279,19 +276,7 @@ int main()
 		//when creating a tranformation matrix, order is important - translate -> rotate -> scale
 		
 		
-
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-		/*for (int i = 0; i < 10; i++) {
-
-			transform = glm::mat4(1.0f);
-			transform = glm::translate(transform, objectPositions[i]);
-			float angle = 20.0f * i;
-			transform = glm::rotate(transform, glm::radians(angle), objectPositions[i]);
-
-			Cobra.Render(transform);
-		}*/
-
 		Scene.Render(glm::mat4(1.0f), firstFrame);
 
 		

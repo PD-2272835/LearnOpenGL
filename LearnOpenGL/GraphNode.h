@@ -11,6 +11,8 @@ struct Transform
 	glm::vec3 position;
 	glm::quat rotation;
 	glm::vec3 scale;
+
+	
 };
 
 class Node
@@ -24,13 +26,22 @@ public:
 		children_ = new Node*[MAX_CHILDREN];
 		maxChildren_ = MAX_CHILDREN;
 		childCount_ = 0; //terrible hack fix for my dogshit implementation of SetChild() as it starts by incrementing this value
-		transform = initTransform;
+		transform_ = initTransform;
 	}
 
-	//publicly accessible transformation used to recalculate model matrix in local space
-	Transform transform;
+	//publicly accessible transformation modification methods
+	//so that we can flag this object's transformation as dirty when it's modified
+	void SetPosition(glm::vec3 newPosition); //Set this object's Position (vector3)
+	void MovePosition(glm::vec3 translation); //Translate this object's current position by vector3(translation)
 
-	void Render(glm::mat4 parentWorld, bool dirty);
+	void SetRotation(glm::quat newRotation); //Set this object's Orientation (quaternion)
+	void Rotate(float angle, glm::vec3 axis); //Rotate this object by angle(degrees) around vector3(axis)
+
+	void SetScale(glm::vec3 newScale); //Set the scale of this object (vector3)
+	void Scale(glm::vec3 scaleModifier); //Scale this object's size by vector3(scaleModifier)
+
+
+	void Render(glm::mat4 parentWorld, bool dirty); //unoptimized graph traversal for rendering
 
 	//Methods for managing nodes in a graph
 	void SetChild(Node* newChild);
@@ -38,6 +49,8 @@ public:
 	void Destroy(bool destroyChildren);
 
 private:
+
+	Transform transform_;
 	glm::mat4 CalculateLocalMatrix();
 
 	void ResizeChildArray(short extraSpace);

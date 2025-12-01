@@ -1,6 +1,42 @@
 #include "GraphNode.h"
 
 
+void Node::SetPosition(glm::vec3 newPosition)
+{
+	transform_.position = newPosition;
+	dirty_ = true;
+}
+
+void Node::MovePosition(glm::vec3 translation)
+{
+	transform_.position += translation;
+	dirty_ = true;
+}
+
+void Node::SetRotation(glm::quat newOrientation)
+{
+	transform_.rotation = newOrientation;
+	dirty_ = true;
+}
+
+void Node::Rotate(float angle, glm::vec3 axis)
+{
+	transform_.rotation = glm::rotate(transform_.rotation, glm::radians(angle), axis);
+	dirty_ = true;
+}
+
+void Node::SetScale(glm::vec3 newScale)
+{
+	transform_.scale = newScale;
+	dirty_ = true;
+}
+
+void Node::Scale(glm::vec3 scaleModifier)
+{
+	transform_.scale += scaleModifier;
+	dirty_ = true;
+}
+
 
 void Node::Destroy(bool destroyChildren = true)
 {
@@ -24,6 +60,7 @@ void Node::Render(glm::mat4 parentWorld, bool dirty)
 	{
 		local_ = CalculateLocalMatrix();
 		world_ = parentWorld * local_;
+		dirty_ = false;
 	}
 
 	if (mesh_) mesh_->Render(world_);
@@ -60,11 +97,12 @@ glm::mat4 Node::CalculateLocalMatrix()
 {
 
 	glm::mat4 Matrix(1.f);
-	Matrix = glm::translate(Matrix, transform.position);
-	Matrix *= glm::mat4_cast(transform.rotation);
-	Matrix = glm::scale(Matrix, transform.scale);
+	Matrix = glm::translate(Matrix, transform_.position);
+	Matrix *= glm::mat4_cast(transform_.rotation);
+	Matrix = glm::scale(Matrix, transform_.scale);
 
 	//return translate * rotate * scale;
+	std::cout << "calculated matrix for " << this << "\n";
 	return Matrix;
 }
 
