@@ -11,8 +11,6 @@ struct Transform
 	glm::vec3 position;
 	glm::quat rotation;
 	glm::vec3 scale;
-
-	
 };
 
 class Node
@@ -25,9 +23,25 @@ public:
 		mesh_ = mesh;
 		children_ = new Node*[MAX_CHILDREN];
 		maxChildren_ = MAX_CHILDREN;
-		childCount_ = 0; //terrible hack fix for my dogshit implementation of SetChild() as it starts by incrementing this value
+		childCount_ = 0;
 		transform_ = initTransform;
+		parent_ = nullptr;
 	}
+
+	void ProcessPhysics();
+	void Render(glm::mat4 parentWorld, bool dirty); //unoptimized graph traversal for rendering
+
+	//Methods for managing nodes in a graph
+	void AddChild(Node* newChild); //add a new child to the child array with SetChild() and manage it's relationship
+	void RemoveChild(Node* targetChild); //search for and remove a child from the child array
+	void Parent(Node* newParent); //add this object to the newParent's child array and set the parent pointer with SetParent
+
+	//DO NOT CALL THESE THEY NEED TO BE PUBLIC SO OTHER NODES CAN ACCESS THEM
+	void SetChild(Node* newChild); //add child to the child array and resize as needed without managing the relationship between parent and child
+	void SetParent(Node* newParent); //sets the parent of this object, does not manage parent/child relationship
+
+	Node** GetChildren();//returns pointer to this object's child array WARNING: CAN BECOME OUTDATED - watch out for modifying parent/children after getting this array
+	void Destroy(bool destroyChildren); //delete this object and free up the space used by child array
 
 	//publicly accessible transformation modification methods
 	//so that we can flag this object's transformation as dirty when it's modified
@@ -41,12 +55,6 @@ public:
 	void Scale(glm::vec3 scaleModifier); //Scale this object's size by vector3(scaleModifier)
 
 
-	void Render(glm::mat4 parentWorld, bool dirty); //unoptimized graph traversal for rendering
-
-	//Methods for managing nodes in a graph
-	void SetChild(Node* newChild);
-	void SetParent(Node* newParent);
-	void Destroy(bool destroyChildren);
 
 private:
 
@@ -60,6 +68,7 @@ private:
 	glm::mat4 world_;
 	Mesh* mesh_;
 
+	Node* parent_;
 	Node** children_; //no way of accessing parent of this node
 	short childCount_; //tracks the end of actually used pointers in the child array
 	short maxChildren_; //size of the children array in elements

@@ -81,6 +81,8 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 }
 
 
+
+
 int main()
 {
 	//--------------Initialize-------------------
@@ -114,6 +116,7 @@ int main()
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouseCallback);
+	//glfwSetScrollCallback(window, scrollCallback);
 
 
 
@@ -236,7 +239,7 @@ int main()
 		current->SetPosition(objectPositions[i]);
 		float angle = 20.0f * i;
 		current->Rotate(angle, objectPositions[i]);
-		Scene.SetChild(current);
+		current->Parent(&Scene);
 	}
 
 	bool firstFrame = true;
@@ -263,21 +266,20 @@ int main()
 
 		shaderProgram.Activate();
 		
-		modulatedValue = (sin(currentFrame) / 2.0f) + 0.5f;
-		
-		
+		//when creating a tranformation matrix, order is important - translate -> rotate -> scale
 		//View Matrix *is* the camera
 		shaderProgram.SetMat4("view", mainCamera.GetViewMatrix());
 
 
 		glm::mat4 projection = glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 		shaderProgram.SetMat4("projection", projection);
-
-		//when creating a tranformation matrix, order is important - translate -> rotate -> scale
 		
+		float angle = 20.0f * deltaTime;
+		Scene.Rotate(angle, glm::vec3(0.f, 1.f, 0.f));
 		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		Scene.Render(glm::mat4(1.0f), firstFrame);
+		
 
 		
 		//check and call events + buffer swap to display next frame
