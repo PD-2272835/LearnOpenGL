@@ -10,6 +10,7 @@
 //other files
 #include "CameraClass.h"
 #include "GraphNode.h"
+#include "CelestialBody.h"
 #include "Mesh.h"
 #include "shaderClass.h" //shader program class
 #include "VBO.h" //vertex buffer class
@@ -235,10 +236,8 @@ int main()
 	//initialize the Game Scene
 	for (int i = 0; i < 10; i++)
 	{
-		Node* current = new Node(&Cobra);
-		current->SetPosition(objectPositions[i]);
-		float angle = 20.0f * i;
-		current->Rotate(angle, objectPositions[i]);
+		CelestialBody* current = new CelestialBody(&Cobra);
+		current->Initialize(objectPositions[i], objectPositions[i], 1000.f);
 		current->Parent(&Scene);
 	}
 
@@ -271,12 +270,15 @@ int main()
 		shaderProgram.SetMat4("view", mainCamera.GetViewMatrix());
 
 
-		glm::mat4 projection = glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection(glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f));
 		shaderProgram.SetMat4("projection", projection);
 		
-		float angle = 20.0f * deltaTime;
-		Scene.Rotate(angle, glm::vec3(0.f, 1.f, 0.f));
-		
+
+		//float angle = 20.0f * deltaTime;
+
+		Scene.ProcessPhysics(deltaTime);
+
+
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		Scene.Render(glm::mat4(1.0f), firstFrame);
 		

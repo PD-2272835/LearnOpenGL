@@ -3,6 +3,7 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+#include <string>
 #include "Mesh.h"
 #define MAX_CHILDREN 2
 
@@ -28,7 +29,7 @@ public:
 		parent_ = nullptr;
 	}
 
-	void ProcessPhysics();
+	virtual void ProcessPhysics(float deltaTime);
 	void Render(glm::mat4 parentWorld, bool dirty); //unoptimized graph traversal for rendering
 
 	//Methods for managing nodes in a graph
@@ -37,7 +38,7 @@ public:
 	void Parent(Node* newParent); //add this object to the newParent's child array and set the parent pointer with SetParent
 
 	//DO NOT CALL THESE THEY NEED TO BE PUBLIC SO OTHER NODES CAN ACCESS THEM
-	void SetChild(Node* newChild); //add child to the child array and resize as needed without managing the relationship between parent and child
+	void AddChildToArray(Node* newChild); //add child to the child array and resize as needed without managing the relationship between parent and child
 	void SetParent(Node* newParent); //sets the parent of this object, does not manage parent/child relationship
 
 	Node** GetChildren();//returns pointer to this object's child array WARNING: CAN BECOME OUTDATED - watch out for modifying parent/children after getting this array
@@ -54,10 +55,12 @@ public:
 	void SetScale(glm::vec3 newScale); //Set the scale of this object (vector3)
 	void Scale(glm::vec3 scaleModifier); //Scale this object's size by vector3(scaleModifier)
 
+	glm::vec3 GetPosition();
+	short GetChildCount();
 
+protected:
 
-private:
-
+	std::string tag_;
 	Transform transform_;
 	glm::mat4 CalculateLocalMatrix();
 

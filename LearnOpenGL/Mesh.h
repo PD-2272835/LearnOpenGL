@@ -1,6 +1,6 @@
 #pragma once
-#include "VAO.h";
-#include "EBO.h";
+#include "VAO.h"
+#include "EBO.h"
 #include "shaderClass.h"
 
 class Mesh

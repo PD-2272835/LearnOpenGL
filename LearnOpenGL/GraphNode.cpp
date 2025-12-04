@@ -2,9 +2,19 @@
 
 
 
+//not very good unoptimized traversal implementation of PRAPI stuff
+//REFACTOR THIS
+void Node::ProcessPhysics(float deltaTime)
+{
+	for (int i = 0; i < childCount_; i++)
+	{
+		children_[i]->ProcessPhysics(deltaTime);
+	}
+}
+
 void Node::Render(glm::mat4 parentWorld, bool dirty)
 {
-	dirty_ |= dirty;
+	dirty |= dirty_;
 	if (dirty)
 	{
 		local_ = CalculateLocalMatrix();
@@ -24,12 +34,12 @@ void Node::Render(glm::mat4 parentWorld, bool dirty)
 void Node::Parent(Node* newParent)
 {
 	SetParent(newParent);
-	newParent->SetChild(this);
+	newParent->AddChildToArray(this);
 }
 
 void Node::RemoveChild(Node* targetChild)
 {
-	Node** newArray = new Node * [maxChildren_];
+	Node** newArray = new Node* [maxChildren_];
 	for (int i = 0; i < maxChildren_; i++)
 	{
 		if (children_[i] = targetChild)
@@ -47,11 +57,11 @@ void Node::RemoveChild(Node* targetChild)
 void Node::AddChild(Node* newChild)
 {
 	newChild->SetParent(this);
-	SetChild(newChild);
+	AddChildToArray(newChild);
 }
 
 
-void Node::SetChild(Node* newChild)
+void Node::AddChildToArray(Node* newChild)
 {
 	//resize the children array with an extra buffer element in case of multiple SetChild calls, 
 	//hopefully reducing the number of times freestore will need to be managed in this way
@@ -95,16 +105,6 @@ void Node::Destroy(bool destroyChildren = true)
 	this->~Node();
 }
 
-//not very good unoptimized traversal implementation of PRAPI stuff
-//REFACTOR THIS
-void Node::ProcessPhysics()
-{
-	for (int i = 0; i < childCount_; i++)
-	{
-		children_[i]->ProcessPhysics();
-	}
-}
-
 
 //-----------------------------------Transform modifiers-----------------------------------
 void Node::SetPosition(glm::vec3 newPosition)
@@ -143,6 +143,12 @@ void Node::Scale(glm::vec3 scaleModifier)
 	dirty_ = true;
 }
 
+//-----------------------------------Transform Accessors-----------------------------------
+glm::vec3 Node::GetPosition()
+{
+	return transform_.position;
+}
+
 
 
 glm::mat4 Node::CalculateLocalMatrix()
@@ -177,4 +183,9 @@ void Node::ResizeChildArray(short extraSpace)
 
 	std::copy(newArray, newArray + maxChildren_, children_);
 	delete[] newArray;
+}
+
+short Node::GetChildCount()
+{
+	return childCount_;
 }
