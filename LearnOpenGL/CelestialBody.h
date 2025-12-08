@@ -1,7 +1,7 @@
 #pragma once
 #include "GraphNode.h"
 
-const float GravitationalConstant = 0.1f;
+const float GravitationalConstant = 0.01f;
 class CelestialBody : public Node
 {
 public:

@@ -13,7 +13,7 @@
 #include "CelestialBody.h"
 #include "Mesh.h"
 #include "shaderClass.h" //shader program class
-#include "VBO.h" //vertex buffer class
+#include "VBO.h" //vertex buffer class`
 #include "EBO.h" //element (index) buffer class
 #include "VAO.h" //vertex array object class
 
@@ -82,6 +82,19 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 }
 
 
+const float goldenRatio = (1 + sqrt(5)) / 2;
+const int pointCount = 250;
+//fibonacci sphere vertex construction - was looking at delaunay triangulation for creating the element array of faces (this will take too long, I just need a sphere-like thing so will use a icosohedron
+glm::vec3 GetSpherePointFromIndex(int index)
+{
+	float j = index + 0.5;
+	float theta = 2 * glm::pi<float>() * j / goldenRatio;
+	float phi = glm::acos(1 - 2 * j / pointCount);
+	float x = glm::cos(theta) * glm::sin(phi);
+	float y = glm::sin(theta) * glm::sin(phi);
+	float z = glm::cos(phi);
+	return glm::vec3(x, y, z);
+}
 
 
 int main()
@@ -123,9 +136,8 @@ int main()
 
 	//------------------Set Up The Data We Send To The GPU------------------
 	// A buffer is used so that all data is sent at once, reducing latency as the GPU is much faster than the CPU
-
-		
-	GLfloat vertices[] = {
+	
+	GLfloat cubeVertices[] = {
 		//Layout 0 - aPos
 		-1.0f,		-1.0f,		-1.0f,		1.0f, 0.0f, 0.0f,//0
 		1.0f,		-1.0f,		-1.0f,		0.5f, 0.5f, 0.0f,//1
@@ -138,7 +150,6 @@ int main()
 		-1.0f,		1.0f,		1.0f,		0.0f, 0.0f, 1.0f//7
 	};
 
-
 	GLuint cubeIndices[] = {
 		0, 1, 3, 3, 1, 2,
 		1, 5, 2, 2, 5, 6,
@@ -147,6 +158,8 @@ int main()
 		3, 2, 7, 7, 2, 6,
 		4, 5, 0, 0, 5, 1
 	};
+
+
 
 	GLfloat cobraVertices[] = {
 		//x			y			z			r	  g		b
@@ -189,20 +202,83 @@ int main()
 		4, 12, 7, //F17
 	};
 
-	glm::vec3 objectPositions[] = {
-	glm::vec3(0.0f,  0.0f,  0.0f),
-	glm::vec3(2.0f,  5.0f, -15.0f),
-	glm::vec3(-1.5f, -2.2f, -2.5f),
-	glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	glm::vec3(-1.7f,  3.0f, -7.5f),
-	glm::vec3(1.3f, -2.0f, -2.5f),
-	glm::vec3(1.5f,  2.0f, -2.5f),
-	glm::vec3(1.5f,  0.2f, -1.5f),
-	glm::vec3(-1.3f,  1.0f, -1.5f)
+	
+	const GLfloat halfgr = goldenRatio / 2;
+	GLfloat icosahedronVertices[] = {
+		//x			y			z			r	  g		b
+		-0.5,		halfgr,		0.f,		1.f, 0.f, 0.f, //0
+		0.5,		halfgr,		0.f,		1.f, 0.f, 0.f, //1
+		-0.5,		-halfgr,	0.f,		1.f, 0.f, 0.f, //2
+		0.5,		-halfgr,	0.f,		1.f, 0.f, 0.f, //3
+		0.f,		-0.5f,		-halfgr,	1.f, 0.f, 0.f, //4
+		0.f,		0.5f,		-halfgr,	1.f, 0.f, 0.f, //5
+		0.f,		-0.5f,		halfgr,		1.f, 0.f, 0.f, //6
+		0.f,		0.5f,		halfgr,		1.f, 0.f, 0.f, //7
+		halfgr,		0.f,		0.5f,		1.f, 0.f, 0.f, //8
+		halfgr,		0.f,		-0.5f,		1.f, 0.f, 0.f, //9
+		-halfgr,	0.f,		0.5f,		1.f, 0.f, 0.f, //10
+		-halfgr,	0.f,		-0.5f,		1.f, 0.f, 0.f  //11
+	};
+
+	GLuint icosahedronIndices[] = {
+		0, 11, 5,
+		0, 5, 1,
+		0, 1, 7,
+		0, 7, 10,
+		0, 10, 11,
+
+		1, 5, 9,
+		5, 11, 4,
+		11, 10, 2,
+		10, 7, 6,
+		7, 1, 8,
+
+		3, 9, 4,
+		3, 4, 2,
+		3, 2, 6,
+		3, 6, 8,
+		3, 8, 9,
+
+		4, 9, 5,
+		2, 4, 11,
+		6, 2, 10,
+		8, 6, 7,
+		9, 8, 1
 	};
 
 
+	/*float sphereVertices[pointCount * 3 * 2];
+	for (int i = 0; i < pointCount; i++)
+	{
+		glm::vec3 current = GetSpherePointFromIndex(i);
+		//layout 1: aPos
+		sphereVertices[i * 2] = current.x;
+		sphereVertices[(i * 2) + 1] = current.y;
+		sphereVertices[(i * 2) + 2] = current.z;
+
+		//layout 2: VertexColour
+		sphereVertices[(i * 2) + 3] = 1.f;
+		sphereVertices[(i * 2) + 4] = 1.f;
+		sphereVertices[(i * 2) + 5] = 1.f;
+	}*/
+
+
+	glm::vec3 objectPositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+	
+
+//--------------------------------------END OF VERTEX/ELEMENT DATA--------------------------------------
+		
 	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
 	Shader shaderProgram("default.vert", "default.frag");
 
@@ -211,14 +287,14 @@ int main()
 	VAO1.Bind();
 
 	//Generate Vertex Buffer Object and link the vertex data defined above into it
-	VBO VBO1(cobraVertices, sizeof(cobraVertices));
+	VBO VBO1(icosahedronVertices, sizeof(icosahedronVertices));
 
 	//defining the location of vertex attributes(Layout) - 0: position, 1: colour
 	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)0);
 	VAO1.LinkAttribute(VBO1, 1, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)(3 * sizeof(GLfloat)));
 
 	//Generate Element (index) Buffer Object and link the tri data from indices defined above into it
-	EBO EBO1(cobraIndices, sizeof(cobraIndices));
+	EBO EBO1(icosahedronIndices, sizeof(icosahedronIndices));
 
 
 	//prevent accidentally modifying VBO/VAO/EBO in lines below this
@@ -230,14 +306,23 @@ int main()
 	//----------------------------------------------------------Main Loop----------------------------------------------------------
 	float modulatedValue;
 	glm::mat4 transform;
-	Mesh Cobra(VAO1, EBO1, shaderProgram);
+	//Mesh Cobra(VAO1, EBO1, shaderProgram);
+	Mesh Planet(VAO1, EBO1, shaderProgram);
 	Node Scene;
 
 	//initialize the Game Scene
 	for (int i = 0; i < 10; i++)
 	{
-		CelestialBody* current = new CelestialBody(&Cobra);
-		current->Initialize(objectPositions[i], objectPositions[i], 1000.f);
+		CelestialBody* current = new CelestialBody(&Planet);
+		if ((i % 2) == 0)
+		{
+			current->Initialize(objectPositions[i], objectPositions[i] * 5.f, 1000.f);
+		}
+		else
+		{
+			current->Initialize(-objectPositions[i], objectPositions[i] * 5.f, 1000.f);
+		}
+		
 		current->Parent(&Scene);
 	}
 
