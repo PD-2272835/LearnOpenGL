@@ -24,7 +24,7 @@
 float deltaTime;
 float lastFrameTime;
 
-Camera mainCamera;
+Camera mainCamera(glm::vec3(0.f, 10.f, 0.f));
 
 //each time the window is resized, set the viewport width and height to the new resize
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -103,12 +103,12 @@ int main()
 	std::cout << "starting OpenGL window" << std::endl;
 	//create a new openGL context
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);//define version of OpenGL we want to use
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//create a window object
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "The Legend Of Cube: Tears of the Cube (lawsuit incoming)", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "CT5PRAPI: Orbit Sim in OpenGL/C++", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "failed to create window" << std::endl;
@@ -263,6 +263,7 @@ int main()
 		sphereVertices[(i * 2) + 4] = 1.f;
 		sphereVertices[(i * 2) + 5] = 1.f;
 	}*/
+//--------------------------------------END OF VERTEX/ELEMENT DATA--------------------------------------
 
 
 	glm::vec3 objectPositions[] = {
@@ -286,11 +287,15 @@ int main()
 
 	glm::vec3 initalVelocities[] = {
 		glm::vec3(0.f),
-		glm::vec3(0.f, 0.f, 2.f)
+		glm::vec3(0.f, 1.f, 3.f)
+	};
+
+	float masses[] = {
+		100.f,
+		10000.f
 	};
 	
 
-//--------------------------------------END OF VERTEX/ELEMENT DATA--------------------------------------
 		
 	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
 	Shader shaderProgram("default.vert", "default.frag");
@@ -326,7 +331,7 @@ int main()
 	for (int i = 0; i < planetCount; i++)
 	{
 		CelestialBody* current = new CelestialBody(&Planet);
-		current->Initialize(initalVelocities[i], planetPositions[i], 10000.f);
+		current->Initialize(initalVelocities[i], planetPositions[i], masses[i]);
 		current->Parent(&Scene);
 	}
 
@@ -346,7 +351,7 @@ int main()
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
 
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //set background to black
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
 
