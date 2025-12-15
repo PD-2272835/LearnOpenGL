@@ -159,8 +159,7 @@ glm::mat4 Node::CalculateLocalMatrix()
 	Matrix *= glm::mat4_cast(transform_.rotation);
 	Matrix = glm::scale(Matrix, transform_.scale);
 
-	//return translate * rotate * scale;
-	std::cout << "calculated local matrix for " << this << "\n";
+	std::cout << this << ":\tx" << transform_.position.x << " \ty" << transform_.position.y << "\tz" << transform_.position.z << "\n"; //remove this: std::cout is slow as f***
 	return Matrix;
 }
 

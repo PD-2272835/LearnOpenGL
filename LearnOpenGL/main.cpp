@@ -8,10 +8,10 @@
 #include <gtc/type_ptr.hpp>
 
 //other files
-#include "CameraClass.h"
-#include "GraphNode.h"
-#include "CelestialBody.h"
-#include "Mesh.h"
+#include "CameraClass.h" // Basic Camera Class used for a "fly on the wall" camera
+#include "GraphNode.h" //Game Object Class
+#include "CelestialBody.h" //inherits from gameobject, implements orbital physics functionality
+#include "Mesh.h" //Mesh Class used for game objects, allowing them to render properly
 #include "shaderClass.h" //shader program class
 #include "VBO.h" //vertex buffer class`
 #include "EBO.h" //element (index) buffer class
@@ -82,8 +82,8 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 }
 
 
-const float goldenRatio = (1 + sqrt(5)) / 2;
-const int pointCount = 250;
+
+/*const int pointCount = 250;
 //fibonacci sphere vertex construction - was looking at delaunay triangulation for creating the element array of faces (this will take too long, I just need a sphere-like thing so will use a icosohedron
 glm::vec3 GetSpherePointFromIndex(int index)
 {
@@ -94,7 +94,7 @@ glm::vec3 GetSpherePointFromIndex(int index)
 	float y = glm::sin(theta) * glm::sin(phi);
 	float z = glm::cos(phi);
 	return glm::vec3(x, y, z);
-}
+}*/
 
 
 int main()
@@ -202,8 +202,9 @@ int main()
 		4, 12, 7, //F17
 	};
 
-	
+	const float goldenRatio = (1 + sqrt(5)) / 2;
 	const GLfloat halfgr = goldenRatio / 2;
+	//vertex positions and colours of an icosahedron
 	GLfloat icosahedronVertices[] = {
 		//x			y			z			r	  g		b
 		-0.5,		halfgr,		0.f,		1.f, 0.f, 0.f, //0
@@ -220,6 +221,7 @@ int main()
 		-halfgr,	0.f,		-0.5f,		1.f, 0.f, 0.f  //11
 	};
 
+	//element (index) data linking groups of three icosahedronVertices to describe a triangle
 	GLuint icosahedronIndices[] = {
 		0, 11, 5,
 		0, 5, 1,
@@ -275,6 +277,17 @@ int main()
 		glm::vec3(1.5f,  0.2f, -1.5f),
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
+
+	int planetCount = 2;
+	glm::vec3 planetPositions[] = {
+		glm::vec3(0.f),
+		glm::vec3(10.f, 0.f, 0.f)
+	};
+
+	glm::vec3 initalVelocities[] = {
+		glm::vec3(0.f),
+		glm::vec3(0.f, 0.f, 2.f)
+	};
 	
 
 //--------------------------------------END OF VERTEX/ELEMENT DATA--------------------------------------
@@ -303,31 +316,23 @@ int main()
 	EBO1.Unbind();
 
 
-	//----------------------------------------------------------Main Loop----------------------------------------------------------
-	float modulatedValue;
+
 	glm::mat4 transform;
 	//Mesh Cobra(VAO1, EBO1, shaderProgram);
 	Mesh Planet(VAO1, EBO1, shaderProgram);
-	Node Scene;
+	Node Scene; //Root Scene Graph Node
 
 	//initialize the Game Scene
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < planetCount; i++)
 	{
 		CelestialBody* current = new CelestialBody(&Planet);
-		if ((i % 2) == 0)
-		{
-			current->Initialize(objectPositions[i], objectPositions[i] * 5.f, 1000.f);
-		}
-		else
-		{
-			current->Initialize(-objectPositions[i], objectPositions[i] * 5.f, 1000.f);
-		}
-		
+		current->Initialize(initalVelocities[i], planetPositions[i], 10000.f);
 		current->Parent(&Scene);
 	}
 
 	bool firstFrame = true;
 
+//----------------------------------------------------------Main Loop----------------------------------------------------------
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime(); //time since Program execution has started a(seconds)
@@ -355,12 +360,9 @@ int main()
 		shaderProgram.SetMat4("view", mainCamera.GetViewMatrix());
 
 
-		glm::mat4 projection(glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f));
+		glm::mat4 projection(glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000.0f));
 		shaderProgram.SetMat4("projection", projection);
 		
-
-		//float angle = 20.0f * deltaTime;
-
 		Scene.ProcessPhysics(deltaTime);
 
 
