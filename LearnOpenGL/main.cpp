@@ -296,10 +296,6 @@ int main()
 	};
 	
 
-		
-	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
-	Shader shaderProgram("default.vert", "default.frag");
-
 	//Generate Vertex Array Object and Bind it
 	VAO VAO1;
 	VAO1.Bind();
@@ -320,9 +316,9 @@ int main()
 	VBO1.Unbind();
 	EBO1.Unbind();
 
+	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
+	Shader shaderProgram("default.vert", "default.frag");
 
-
-	glm::mat4 transform;
 	//Mesh Cobra(VAO1, EBO1, shaderProgram);
 	Mesh Planet(VAO1, EBO1, shaderProgram);
 	Node Scene; //Root Scene Graph Node
@@ -352,7 +348,7 @@ int main()
 
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //set background to black
-		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST); //cull faces/vertices that are hidden behind others
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
 
 		glEnable(GL_BLEND); 

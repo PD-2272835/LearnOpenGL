@@ -1,6 +1,6 @@
 #version 330 core
-layout (location = 0) in vec3 aPos;		//vertex position is the first vec3 attribute
-layout (location = 1) in vec3 aColor;
+layout (location = 0) in vec3 aPos;		//vertex position 0 is the first vec3 attribute
+layout (location = 1) in vec3 aColor;	//vertex position 1 is the second vec3 attribute
 
 out vec3 VertexColor; //output to fragment shader
 
