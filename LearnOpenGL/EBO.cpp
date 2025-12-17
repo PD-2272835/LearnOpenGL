@@ -10,6 +10,7 @@ EBO::EBO(GLuint* indices, GLsizeiptr size)
 	GL_STATIC - Data is set once and used many times
 	GL_STREAM - Data is set only once and used only a couple of times at most
 	GL_DYNAMIC - data is changed and used many times */
+	this->Unbind();
 }
 
 void EBO::Bind()
@@ -25,4 +26,5 @@ void EBO::Unbind()
 void EBO::Delete()
 {
 	glDeleteBuffers(1, &ID);
+	this->Unbind();
 }

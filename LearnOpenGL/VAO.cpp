@@ -8,12 +8,14 @@ VAO::VAO()
 void VAO::LinkAttribute(VBO VBO, GLuint layout, GLuint numComponents, GLenum type, GLboolean normalized, GLsizeiptr stride, void* offset)
 {
 	VBO.Bind();
+	this->Bind();
 	//--------------------Link vertex attributes-------------------
 	// (Tell Shaders How To Interpret The Vertex Data)
 	glVertexAttribPointer(layout, numComponents, type, normalized, stride, offset); //weird cast just tells opengl that the start of the vertex data is at the start of the vertex buffer
 	glEnableVertexAttribArray(layout); //the layout number used by the vertex shader
 
 	VBO.Unbind();
+	this->Unbind();
 }
 
 void VAO::Bind()
@@ -29,4 +31,5 @@ void VAO::Unbind()
 void VAO::Delete()
 {
 	glDeleteVertexArrays(1, &ID);
+	this->Unbind();
 }

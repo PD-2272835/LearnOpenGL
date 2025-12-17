@@ -32,7 +32,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
+void processKeyboardInput(GLFWwindow* window)
 {
 	//close the process if escape key is pressed
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -127,7 +127,7 @@ int main()
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); //establish rendering viewport (same size as window)
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); //bind the window resize callback
-
+	
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouseCallback);
 	//glfwSetScrollCallback(window, scrollCallback);
@@ -287,7 +287,7 @@ int main()
 
 	glm::vec3 initalVelocities[] = {
 		glm::vec3(0.f),
-		glm::vec3(0.f, 1.f, 3.f)
+		glm::vec3(0.f, 1.f, 2.f)
 	};
 
 	float masses[] = {
@@ -296,13 +296,12 @@ int main()
 	};
 	
 
-	//Generate Vertex Array Object and Bind it
-	VAO VAO1;
-	VAO1.Bind();
 
 	//Generate Vertex Buffer Object and link the vertex data defined above into it
 	VBO VBO1(icosahedronVertices, sizeof(icosahedronVertices));
 
+	//Generate Vertex Array Object and Bind it
+	VAO VAO1;
 	//defining the location of vertex attributes(Layout) - 0: position, 1: colour
 	VAO1.LinkAttribute(VBO1, 0, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)0);
 	VAO1.LinkAttribute(VBO1, 1, 3, GL_FLOAT, GL_FALSE, 6 * (sizeof(GLfloat)), (void*)(3 * sizeof(GLfloat)));
@@ -311,17 +310,12 @@ int main()
 	EBO EBO1(icosahedronIndices, sizeof(icosahedronIndices));
 
 
-	//prevent accidentally modifying VBO/VAO/EBO in lines below this
-	VAO1.Unbind();
-	VBO1.Unbind();
-	EBO1.Unbind();
-
 	//create and compile complete shader program from default.vert and default.frag vertex and fragment shaders
 	Shader shaderProgram("default.vert", "default.frag");
 
-	//Mesh Cobra(VAO1, EBO1, shaderProgram);
 	Mesh Planet(VAO1, EBO1, shaderProgram);
 	Node Scene; //Root Scene Graph Node
+
 
 	//initialize the Game Scene
 	for (int i = 0; i < planetCount; i++)
@@ -337,19 +331,20 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime(); //time since Program execution has started a(seconds)
-		deltaTime = currentFrame - lastFrameTime;
+		deltaTime = currentFrame - lastFrameTime; //change in time since last frame (seconds)
 		lastFrameTime = currentFrame;
 
 		//input
-		processInput(window);
+		processKeyboardInput(window);
 
 		//rendering (pipeline (* for where we can inject custom shader)
 		//*Vertex Shader -> *Geometry Shader -> Shape Assembly -> Rasterizer -> *Fragment(per pixel) Shader -> Tests + Blending
 
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //set background to black
-		glEnable(GL_DEPTH_TEST); //cull faces/vertices that are hidden behind others
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //state *using* function, actually reset the buffer specified (in this case, the colour buffer) to the current state, retrieving the clearing colour
+		glEnable(GL_DEPTH_TEST); //render faces in order from closest - furthest to the camera
+		//clear the frame buffer by colur and depth buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glEnable(GL_BLEND); 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //enable color blending for transparency
@@ -361,21 +356,21 @@ int main()
 		shaderProgram.SetMat4("view", mainCamera.GetViewMatrix());
 
 
-		glm::mat4 projection(glm::perspective(glm::radians(70.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000.0f));
+		glm::mat4 projection(glm::perspective(glm::radians(90.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000.0f));
 		shaderProgram.SetMat4("projection", projection);
 		
 		Scene.ProcessPhysics(deltaTime);
 
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //draw in wireframe mode
 		Scene.Render(glm::mat4(1.0f), firstFrame);
 		
 
 		
 		//check and call events + buffer swap to display next frame
-		glfwPollEvents(); 
-		glfwSwapBuffers(window);
-		glfwSwapInterval(1);
+		glfwPollEvents(); //callback-based events get processed (window resize, mouse movement)
+		glfwSwapInterval(1); // only swap based on the refresh rate of the monitor
+		glfwSwapBuffers(window); //swap the current frame buffer for the back buffer
 		firstFrame = false;
 	}
 
